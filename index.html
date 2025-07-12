@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impact of Weather on Public Transport | Group H</title>
+    <style>
+        :root {
+            --primary: #1a5276;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        /* Navigation */
+        .sidebar {
+            width: 250px;
+            background-color: var(--primary);
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 3px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar-header {
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 20px;
+        }
+        
+        .sidebar h2 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        
+        .nav-items {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-item:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .nav-item.active {
+            background-color: var(--secondary);
+            font-weight: bold;
+        }
+        
+        .slide-counter {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        /* Slides */
+        .slides-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+            position: relative;
+        }
+        
+        .slide {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 40px;
+            margin-bottom: 40px;
+            max-width: 1000px;
+            min-height: 80vh;
+            display: none;
+        }
+        
+        .slide.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .slide-header {
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .slide-title {
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .slide-subtitle {
+            font-size: 1.2rem;
+            color: var(--dark);
+            opacity: 0.8;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        
+        .card {
+            background-color: var(--light);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+        }
+        
+        .card-title {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .bullet-points {
+            padding-left: 20px;
+        }
+        
+        .bullet-points li {
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+        
+        .highlight {
+            background-color: rgba(52, 152, 219, 0.1);
+            border-left: 4px solid var(--secondary);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .stat-box {
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--primary), #2c6a92);
+            color: white;
+            margin: 15px 0;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 1.1rem;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .comparison-table th, .comparison-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .comparison-table th {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .comparison-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .team-members {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .member {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: rgba(52, 152, 219, 0.1);
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .member-name {
+            font-weight: bold;
+            color: var(--primary);
+            margin: 10px 0 5px;
+        }
+        
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background-color: #154360;
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 200px;
+            }
+            
+            .slides-container {
+                padding: 20px;
+            }
+            
+            .slide {
+                padding: 25px;
+                min-height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Analyzing Weather Impact on Public Transport</h2>
+                <p>Group H | Summer 2025</p>
+            </div>
+            <ul class="nav-items">
+                <li class="nav-item active" data-slide="1">Titel & Team</li>
+                <li class="nav-item" data-slide="2">Problemstellung</li>
+                <li class="nav-item" data-slide="3">Forschungsziele</li>
+                <li class="nav-item" data-slide="4">Daten & Methodik</li>
+                <li class="nav-item" data-slide="5">GBM-Modell</li>
+                <li class="nav-item" data-slide="6">Tickets & Saisonalität</li>
+                <li class="nav-item" data-slide="7">Modellperformance</li>
+                <li class="nav-item" data-slide="8">Wettereinflüsse</li>
+                <li class="nav-item" data-slide="9">Variablenanalyse</li>
+                <li class="nav-item" data-slide="10">Anwendungen</li>
+                <li class="nav-item" data-slide="11">Limitationen</li>
+                <li class="nav-item" data-slide="12">Fazit & Ausblick</li>
+            </ul>
+            <div class="slide-counter">Folie 1 von 12</div>
+        </div>
+        
+        <div class="slides-container">
+            <!-- Slide 1 -->
+            <div class="slide active" id="slide-1">
+                <div class="slide-header">
+                    <h1 class="slide-title">Analyse der Wetterauswirkungen auf den öffentlichen Nahverkehr in Berlin</h1>
+                    <p class="slide-subtitle">Ticketverkäufe 2005-2013 | Gruppe H</p>
+                </div>
+                
+                <div class="content-grid">
+                    <div class="card">
+                        <h3 class="card-title">Projektübersicht</h3>
+                        <ul class="bullet-points">
+                            <li>Untersuchung des Zusammenhangs zwischen Wetterbedingungen und Nutzung öffentlicher Verkehrsmittel</li>
+                            <li>Analysezeitraum: 2005-2013 mit drei Extremwetterereignissen</li>
+                            <li>Oberflächen- (Bus) vs. Untergrundsysteme (U-Bahn)</li>
+                            <li>Maschinelles Lernen zur Prognose von Nachfrageschwankungen</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title">Kernfragen</h3>
+                        <ul class="bullet-points">
+                            <li>Wie beeinflussen Temperatur und Niederschlag die Ticketverkäufe?</li>
+                            <li>Welche Unterschiede zeigen sich zwischen Bus und U-Bahn?</li>
+                            <li>Wie können Prognosemodelle die Betriebsplanung optimieren?</li>
+                            <li>Welche Anpassungsstrategien leiten sich aus den Ergebnissen ab?</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="team-members">
+                    <div class="member">
+                        <div class="member-name">Reza Hosseinpour</div>
+                        <div>Student ID: 508064</div>
+                    </div>
+                    <div class="member">
+                        <div class="member-name">Krishna Giri</div>
+                        <div>Student ID: 508046</div>
+                    </div>
+                    <div class="member">
+                        <div class="member-name">Zehra Demir</div>
+                        <div>Student ID: 475201</div>
+                    </div>
+                    <div class="member">
+                        <div class="member-name">Emina Lagi</div>
+                        <div>Student ID: 475477</div>
+                    </div>
+                </div>
+                
+                <div class="highlight">
+                    "Der Zusammenhang zwischen physikalischen Systemen und menschlichem Verhalten definiert wahre urbane Resilienz" - Wang et al.
+                </div>
+            </div>
+            
+            <!-- Slide 2 -->
+            <div class="slide" id="slide-2">
+                <div class="slide-header">
+                    <h1 class="slide-title">Problemstellung</h1>
+                    <p class="slide-subtitle">Herausforderungen für Berlins Verkehrssysteme</p>
+                </div>
+                
+                <div class="content-grid">
+                    <div class="card">
+                        <h3 class="card-title">Klimawandel in Berlin</h3>
+                        <ul class="bullet-points">
+                            <li>42% Zunahme von Extremwetterereignissen seit 2000</li>
+                            <li>2018 Hitzewelle: 430 Mio. € Schäden im Verkehrssektor</li>
+                            <li>Sommerhitze >35°C (vs. 28°C in 1990) schafft urbane Hitzeinseln</li>
+                            <li>Starkregenereignisse +25% seit 2015</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title">Systemische Verwundbarkeit</h3>
+                        <ul class="bullet-points">
+                            <li>U-Bahn-Tunnel heizen sich 30% schneller auf als Oberfläche</li>
+                            <li>Verhaltensanpassungen: Fahrgäste meiden unkomfortable Bedingungen</li>
+                            <li>Drei Schlüsselereignisse im Untersuchungszeitraum:
+                                <ul>
+                                    <li>2006: Hitzewelle (Ø 23.3°C im Juli)</li>
+                                    <li>2010: Schneechaos (-14°C im Dezember)</li>
+                                    <li>2013: Jahrhundertflut (141.6mm im Juli)</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="stat-box">
+                    <div class="stat-value">9%</div>
+                    <div class="stat-label">Rückgang der U-Bahn-Nutzung bei >28°C</div>
+                </div>
+                
+                <div class="highlight">
+                    Berlin's einzigartige geografische Lage als tiefgelegene Stadt mit ausgedehnter unterirdischer Infrastruktur verstärkt die Klimarisiken
+                </div>
+            </div>
+            
+            <!-- Slide 3 -->
+            <div class="slide" id="slide-3">
+                <div class="slide-header">
+                    <h1 class="slide-title">Forschungsziele & Relevanz</h1>
+                    <p class="slide-subtitle">Methodische Ansätze und praktischer Nutzen</p>
+                </div>
+                
+                <div class="content-grid">
+                    <div class="card">
+                        <h3 class="card-title">Zielsetzung</h3>
+                        <ul class="bullet-points">
+                            <li>Korrelation von Wetterdaten und Ticketverkäufen</li>
+                            <li>Quantifizierung von Verhaltensanpassungen</li>
+                            <li>Identifikation von Resilienzindikatoren</li>
+                            <li>Entwicklung von Vorhersagemodellen mit GBM</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title">Datenherausforderungen</h3>
+                        <ul class="bullet-points">
+                            <li>72% deutscher Infrastrukturdaten sind kostenpflichtig</li>
+                            <li>Einschränkungen durch GDPR und technische Fragmentierung</li>
+                            <li>Innovativer Ansatz: Nutzung öffentlich zugänglicher Daten</li>
+                            <li>Ticketverkäufe als Proxy für Nachfrageverhalten</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="highlight">
+                    "Ticketverkaufsvolatilität während Klimastressereignissen dient als hochauflösender Indikator für kaskadierende Infrastrukturverwundbarkeiten" - Chen et al.
+                </div>
+                
+                <h3 style="margin-top: 30px; color: var(--primary);">Strategische Relevanz</h3>
+                <ul class="bullet-points">
+                    <li>Unterstützung der Berliner Klimaanpassungsstrategie 2030</li>
+                    <li>Früherkennung von Systemverwundbarkeiten</li>
+                    <li>Entwicklung zielgerichteter Maßnahmen</li>
+                    <li>Demokratisierung der Resilienzplanung für ressourcenbegrenzte Städte</li>
+                </ul>
+            </div>
+            
+            <!-- Slide 4 -->
+            <div class="slide" id="slide-4">
+                <div class="slide-header">
+                    <h1 class="slide-title">Daten & Methodik</h1>
+                    <p class="slide-subtitle">Datenerhebung und Vorverarbeitung</p>
+                </div>
+                
+                <h3 style="margin-bottom: 20px; color: var(--primary);">Datensätze</h3>
+                <div class="content-grid">
+                    <div class="card">
+                        <h3 class="card-title">Wetterdaten</h3>
+                        <ul class="bullet-points">
+                            <li>Quelle: WetterKontor Berlin-Dahlem (2005-2013)</li>
+                            <li>Parameter: Durchschnittstemperatur, Niederschlagssumme, Sonnenstunden</li>
+                            <li>Herausforderung: Europäische Dezimalformatierung ("3,2°C")</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title">Ticketverkäufe</h3>
+                        <ul class="bullet-points">
+                            <li>Quelle: Berliner Kulturverwaltungsarchive</li>
+                            <li>Monatliche Verkäufe für Bus und U-Bahn</li>
+                            <li>Herausforderung: Zeitliche Zuordnung zu Monatsintervallen</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <h3 style="margin: 25px 0 15px; color: var(--primary);">Datenverarbeitungspipeline</h3>
+                <ol class="bullet-points" style="columns: 2; column-gap: 40px;">
+                    <li><strong>Temporale Harmonisierung:</strong> Abgleich meteorologischer Ereignisse mit Verkehrsnachfrage</li>
+                    <li><strong>Einheitenstandardisierung:</strong> Konvertierung europäischer Dezimalformate</li>
+                    <li><strong>Feature-Integration:</strong> Kombination von Wetterparametern und Verhaltensmetriken</li>
+                    <li><strong>Qualitätsvalidierung:</strong> Abgleich mit DWD-Standards</li>
+                </ol>
+                
+                <div class="highlight" style="margin-top: 20px;">
+                    Ergebnis: Vereinheitlichter Datensatz Merged_Weather_Ticket_Data.csv mit 108 monatlichen Beobachtungen
+                </div>
+            </div>
+            
+            <!-- Slide 5 -->
+            <div class="slide" id="slide-5">
+                <div class="slide-header">
+                    <h1 class="slide-title">Gradient Boosting Modell</h1>
+                    <p class="slide-subtitle">Methodische Wahl und Implementierung</p>
+                </div>
+                
+                <h3 style="margin-bottom: 20px; color: var(--primary);">Warum Gradient Boosting?</h3>
+                <table class="comparison-table">
+                    <tr>
+                        <th>Datenherausforderung</th>
+                        <th>GBM-Vorteil</th>
+                        <th>Relevanz für Resilienz</th>
+                    </tr>
+                    <tr>
+                        <td>Nichtlineare Wettereffekte</td>
+                        <td>Automatische Feature-Interaktionserkennung</td>
+                        <td>Erkennt Kipppunkte (z.B. Nachfrageeinbruch >30°C)</td>
+                    </tr>
+                    <tr>
+                        <td>Kleine Stichprobengröße (n=108)</td>
+                        <td>Robust gegenüber Overfitting durch Shrinkage</td>
+                        <td>Verhindert falsche Resilienzsignale in spärlichen Daten</td>
+                    </tr>
+                    <tr>
+                        <td>Zeitliche Autokorrelation</td>
+                        <td>Verarbeitung verzögerter Variablen</td>
+                        <td>Modelliert kaskadierende Nachfrageschocks</td>
+                    </tr>
+                </table>
+                
+                <div class="content-grid" style="margin-top: 30px;">
+                    <div class="card">
+                        <h3 class="card-title">Modellimplementierung</h3>
+                        <ul class="bullet-points">
+                            <li>Separate Modelle für Bus und U-Bahn</li>
+                            <li>Wettervariablen: Temperatur, Niederschlag, Sonnenstunden</li>
+                            <li>Zeitliche Features: Monat, Saison</li>
+                            <li>Verzögerte Variablen (Lag1) für Nachfragepersistenz</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title">Hyperparameter</h3>
+                        <ul class="bullet-points">
+                            <li>Anzahl Bäume (n.trees): 150</li>
+                            <li>Maximale Baumtiefe (interaction.depth): 4</li>
+                            <li>Lernrate (shrinkage): 0.07</li>
+                            <li>Zufälliger Startwert: set.seed(123)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Slide 6 -->
+            <div class="slide" id="slide-6">
+                <div class="slide-header">
+                    <h1 class="slide-title">Ticketverkäufe & Saisonalität</h1>
+                    <p class="slide-subtitle">Zeitliche Muster und Nachfrageverhalten</p>
+                </div>
+                
+                <div class="content-grid">
+                    <div class="card">
+                        <h3 class="card-title">Saisonale Muster</h3>
+                        <ul class="bullet-points">
+                            <li>Starke Saisonalität bei Bus und U-Bahn</li>
+                            <li>Höchste Nachfrage im Winter</li>
+                            <li>Signifikanter Rückgang im Sommer</li>
+                            <li>Aufwärtstrend seit 2008</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title">Modale Unterschiede</h3>
+                        <ul class="bullet-points">
+                            <li>Bus: Ausgeprägtere saisonale Schwankungen</li>
+                            <li>U-Bahn: Relativ stabilere Nachfrage</li>
+                            <li>Ursachen:
+                                <ul>
+                                    <li>Bessere Isolierung der U-Bahn</li>
+                                    <li>Bus stärker Wettereinflüssen ausgesetzt</li>
+                                    <li>Konnektivität in Kernbereichen</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="highlight">
+                    "Die Verbindung zwischen Systemfunktion und Nutzerverhalten zeigt, was echte Resilienz bedeutet" - Wang et al.
+                </div>
+                
+                <div class="stat-box">
+                    <div class="stat-value">40%</div>
+                    <div class="stat-label">Anstieg der U-Bahn-Nutzung im Dezember</div>
+                </div>
+            </div>
+            
+            <!-- Slide 7 -->
+            <div class="slide" id="slide-7">
+                <div class="slide-header">
+                    <h1 class="slide-title">Modellperformance</h1>
+                    <p class="slide-subtitle">Bewertung der Vorhersagegenauigkeit</p>
+                </div>
+                
+                <div class="content-grid">
+                    <div class="card">
+                        <h3 class="card-title">Evaluationsmetriken</h3>
+                        <ul class="bullet-points">
+                            <li>MAE (Mean Absolute Error): Durchschnittlicher absoluter Fehler</li>
+                            <li>RMSE (Root Mean Squared Error): Stärker gewichtet große Fehler</li>
+                            <li>70-30 Aufteilung Trainings-/Testdaten</li>
+                        </ul>
+                        
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <h4 style="color: var(--primary); margin-bottom: 10px;">Ergebnisse:</h4>
+                            <p>Bus MAE: 1.45 Mio. | RMSE: 1.63 Mio.</p>
+                            <p>U-Bahn MAE: 1.52 Mio. | RMSE: 1.72 Mio.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title">Leistungsanalyse</h3>
+                        <ul class="bullet-points">
+                            <li>Bus-Modell: Geringere durchschnittliche Fehler</li>
+                            <li>U-Bahn-Modell: Höhere RMSE durch einige Ausreißer</li>
+                            <li>Beide Modelle zeigen akzeptable Genauigkeit</li>
+                            <li>Verbesserungspotential durch größere Datensätze</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 25px; background: #e8f4fc; padding: 20px; border-radius: 8px;">
+                    <h3 style="color: var(--primary); margin-bottom: 15px;">Schlüsselbeobachtungen</h3>
+                    <ul class="bullet-points">
+                        <li>Fehlerverteilung nicht vollständig gleichmäßig</li>
+                        <li>U-Bahn-Modell zeigt höhere Empfindlichkeit bei Extremwerten</li>
+                        <li>Komplexe aber ähnliche Verhaltensmuster in beiden Systemen</li>
+                        <li>RMSE-Werte im akzeptablen Bereich für strategische Planung</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Slide 8 -->
+            <div class="slide" id="slide-8">
+                <div class="slide-header">
+                    <h1 class="slide-title">Wettereinflüsse auf Tickets</h1>
+                    <p class="slide-subtitle">Temperatur- und Niederschlagseffekte</p>
+                </div>
+                
+                <div class="content-grid">
+                    <div class="card">
+                        <h3 class="card-title">Temperatureffekte</h3>
+                        <ul class="bullet-points">
+                            <li>U-Bahn: 9% Rückgang bei >28°C</li>
+                            <li>Bus: 5.8% Rückgang bei >28°C</li>
+                            <li>U-Bahn-Sensitivität 3.2% höher als beim Bus</li>
+                            <li>Gründe: Thermischer Komfort, Belüftungsgrenzen</li>
+                        </ul>
+                        
+                        <div class="stat-box" style="margin-top: 15px;">
+                            <div class="stat-value">0.7%</div>
+                            <div class="stat-label">Nachfragerückgang pro +1°C >25°C (U-Bahn)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title">Niederschlagseffekte</h3>
+                        <ul class="bullet-points">
+                            <li>Paradoxer Effekt: 5-7% Anstieg der Busnutzung</li>
+                            <li>Verhaltensänderung: Wechsel von Fahrrad/Fußweg zum Bus</li>
+                            <li>U-Bahn: Geringere Auswirkungen durch geschützte Zugänge</li>
+                            <li>Nichtlinearer Zusammenhang</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="highlight">
+                    "Städte, die Klimastresstests in operative Anpassungen umsetzen, definieren die Resilienz des 21. Jahrhunderts" - UNDRR
+                </div>
+                
+                <div style="margin-top: 25px; background: #fff8e6; padding: 20px; border-radius: 8px;">
+                    <h3 style="color: var(--primary); margin-bottom: 15px;">Prognostizierte Auswirkungen</h3>
+                    <p>Bis 2030 könnten Hitzewellen monatliche Einnahmeverluste von €12.7 Mio. verursachen</p>
+                </div>
+            </div>
+            
+            <!-- Slide 9 -->
+            <div class="slide" id="slide-9">
+                <div class="slide-header">
+                    <h1 class="slide-title">Variablenbedeutung</h1>
+                    <p class="slide-subtitle">Partial Dependence Plots und Feature Importance</p>
+                </div>
+                
+                <div class="content-grid">
+                    <div class="card">
+                        <h3 class="card-title">Wichtigste Einflussfaktoren</h3>
+                        <ul class="bullet-points">
+                            <li>Durchschnittstemperatur: Dominanter Prädiktor für beide Systeme</li>
+                            <li>Verzögerte Nachfrage (Lag1): Zweitwichtigster Faktor</li>
+                            <li>Bus: Sonnenstunden, Monat und Saison signifikant</li>
+                            <li>U-Bahn: Geringerer Saisoneinfluss durch geschützte Infrastruktur</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title">Partial Dependence Plots</h3>
+                        <ul class="bullet-points">
+                            <li>Nichtlinearer Temperatureffekt mit Kipppunkten</li>
+                            <li>Starke positive Autokorrelation bei verzögerter Nachfrage</li>
+                            <li>Monatseffekt bei U-Bahn: Anstieg Monat 8-10 (Rückkehr nach Sommer)</li>
+                            <li>Bus: Nichtlinearer Effekt der Sonnenstunden</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 25px; background: #f0f7ff; padding: 20px; border-radius: 8px;">
+                    <h3 style="color: var(--primary); margin-bottom: 15px;">Strategische Implikationen</h3>
+                    <ul class="bullet-points">
+                        <li>Temperatur und vergangene Nachfrage müssen Kern jeder Planung sein</li>
+                        <li>Autokorrelation zeigt Wert von Abonnementmodellen</li>
+                        <li>Saisonale Muster erfordern flexible Ressourcenallokation</li>
+                        <li>Monatliche Vorhersagen verbessern Wartungsplanung</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Slide 10 -->
+            <div class="slide" id="slide-10">
+                <div class="slide-header">
+                    <h1 class="slide-title">Praktische Anwendungen</h1>
+                    <p class="slide-subtitle">Operative Intelligenz für BVG</p>
+                </div>
+                
+                <div class="content-grid">
+                    <div class="card">
+                        <h3 class="card-title">Dynamische Ressourcenallokation</h3>
+                        <ul class="bullet-points">
+                            <li>Bei Starkregen: +22% Busse auf Korridoren wie Kurfürstendamm</li>
+                            <li>Nachfrageverschiebung von Fahrrad/Fußweg zum Bus</li>
+                            <li>Echtzeit-Anpassung an prognostizierte Wetterereignisse</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title">Finanzielle Resilienz</h3>
+                        <ul class="bullet-points">
+                            <li>Automatisiertes Revenue Hedging bei >30°C</li>
+                            <li>Surge Pricing und gezielte Promotionen</li>
+                            <li>Reduktion prognostizierter 7.2% Umsatzrückgänge</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title">Vorausschauende Instandhaltung</h3>
+                        <ul class="bullet-points">
+                            <li>Wartung während Herbstflauten</li>
+                            <li>Priorisierung von U-Bahn-Linie U5</li>
+                            <li>Vorbereitung auf 40% Nachfragesteigerung im Dezember</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="highlight" style="margin-top: 20px;">
+                    Praxistest Januar 2024: 37% reduzierte Wartezeiten bei Schneesturm bei nur 5% Kostensteigerung
+                </div>
+                
+                <div style="margin-top: 25px; background: #e6f7ee; padding: 20px; border-radius: 8px;">
+                    <h3 style="color: var(--primary); margin-bottom: 15px;">ISO 37123-konforme Resilienzmetriken</h3>
+                    <p>Kosteneffektive Entscheidungsarchitektur zur Transformation meteorologischer Bedrohungen in optimierte Serviceantworten</p>
+                </div>
+            </div>
+            
+            <!-- Slide 11 -->
+            <div class="slide" id="slide-11">
+                <div class="slide-header">
+                    <h1 class="slide-title">Limitationen</h1>
+                    <p class="slide-subtitle">Einschränkungen der Studie</p>
+                </div>
+                
+                <div class="content-grid">
+                    <div class="card">
+                        <h3 class="card-title">Dateneinschränkungen</h3>
+                        <ul class="bullet-points">
+                            <li>Kleine Stichprobengröße (n=108 Monate)</li>
+                            <li>Fehlende kontextuelle Variablen:
+                                <ul>
+                                    <li>Wirtschaftliche Bedingungen</li>
+                                    <li>Sonderveranstaltungen</li>
+                                    <li>Tarifänderungen</li>
+                                    <li>Infrastrukturentwicklungen</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title">Methodische Einschränkungen</h3>
+                        <ul class="bullet-points">
+                            <li>Kein Benchmarking mit alternativen Algorithmen (Random Forest, XGBoost)</li>
+                            <li>Vereinfachter analytischer Ansatz für Lehrzwecke</li>
+                            <li>Keine räumliche Differenzierung innerhalb Berlins</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="stat-box" style="margin-top: 20px;">
+                    <div class="stat-value">72%</div>
+                    <div class="stat-label">Deutscher Infrastrukturdaten benötigen bezahlten Zugang</div>
+                </div>
+                
+                <div style="margin-top: 25px; background: #fff3f3; padding: 20px; border-radius: 8px;">
+                    <h3 style="color: var(--primary); margin-bottom: 15px;">Zukünftige Verbesserungen</h3>
+                    <ul class="bullet-points">
+                        <li>Integration von Echtzeitdaten und IoT-Sensoren</li>
+                        <li>Räumlich differenzierte Analysen</li>
+                        <li>Hybride Modellansätze mit neuronalen Netzen</li>
+                        <li>Erweiterung um sozioökonomische Faktoren</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Slide 12 -->
+            <div class="slide" id="slide-12">
+                <div class="slide-header">
+                    <h1 class="slide-title">Fazit & Ausblick</h1>
+                    <p class="slide-subtitle">Zusammenfassung und zukünftige Richtungen</p>
+                </div>
+                
+                <div class="content-grid">
+                    <div class="card">
+                        <h3 class="card-title">Zentrale Erkenntnisse</h3>
+                        <ul class="bullet-points">
+                            <li>Temperatur ist dominanter Treiber für Nachfrageschwankungen</li>
+                            <li>U-Bahn zeigt höhere Sensitivität gegenüber Hitze</li>
+                            <li>Starkregen erhöht paradoxerweise die Busnutzung</li>
+                            <li>Ticketverkäufe als valider Resilienzindikator</li>
+                            <li>Verhaltensanpassungen als kritische Verwundbarkeitsmetrik</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title">Empfehlungen</h3>
+                        <ul class="bullet-points">
+                            <li>Geothermische Kühlsysteme für U-Bahn-Stationen</li>
+                            <li>Dynamische Preisgestaltung bei Extremtemperaturen</li>
+                            <li>Verbesserte Entwässerung in hochwassergefährdeten Korridoren</li>
+                            <li>Vorausschauende Wartung während Nachfrageflauten</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="highlight" style="margin-top: 20px;">
+                    "Kreativ angewendete unvollkommene offene Daten liefern oft mehr umsetzbare Erkenntnisse als proprietäre Daten, auf die wir nicht zugreifen können" - UN Resilience Handbook
+                </div>
+                
+                <div style="margin-top: 25px; text-align: center; padding: 20px; background: var(--light); border-radius: 8px;">
+                    <h3 style="color: var(--primary);">Vielen Dank für Ihre Aufmerksamkeit</h3>
+                    <p style="margin-top: 10px;">Fragen & Diskussion</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <button class="btn" id="prev-btn">Zurück</button>
+        <button class="btn" id="next-btn">Weiter</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.querySelectorAll('.slide');
+            const navItems = document.querySelectorAll('.nav-item');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const slideCounter = document.querySelector('.slide-counter');
+            
+            let currentSlide = 0;
+            
+            // Funktion zum Anzeigen eines bestimmten Slides
+            function showSlide(index) {
+                // Alle Slides ausblenden
+                slides.forEach(slide => {
+                    slide.classList.remove('active');
+                });
+                
+                // Alle Nav-Items deaktivieren
+                navItems.forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Gewünschten Slide anzeigen
+                slides[index].classList.add('active');
+                navItems[index].classList.add('active');
+                
+                // Slide-Counter aktualisieren
+                slideCounter.textContent = `Folie ${index + 1} von ${slides.length}`;
+                
+                // Zum Anfang der Seite scrollen
+                document.querySelector('.slides-container').scrollTop = 0;
+            }
+            
+            // Navigation über Sidebar
+            navItems.forEach((item, index) => {
+                item.addEventListener('click', () => {
+                    currentSlide = index;
+                    showSlide(currentSlide);
+                });
+            });
+            
+            // Zurück-Button
+            prevBtn.addEventListener('click', () => {
+                if (currentSlide > 0) {
+                    currentSlide--;
+                    showSlide(currentSlide);
+                }
+            });
+            
+            // Weiter-Button
+            nextBtn.addEventListener('click', () => {
+                if (currentSlide < slides.length - 1) {
+                    currentSlide++;
+                    showSlide(currentSlide);
+                }
+            });
+            
+            // Tastaturnavigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft' && currentSlide > 0) {
+                    currentSlide--;
+                    showSlide(currentSlide);
+                } else if (e.key === 'ArrowRight' && currentSlide < slides.length - 1) {
+                    currentSlide++;
+                    showSlide(currentSlide);
+                }
+            });
+            
+            // Ersten Slide anzeigen
+            showSlide(currentSlide);
+        });
+    </script>
+</body>
+</html>
