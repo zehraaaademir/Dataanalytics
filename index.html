@@ -289,40 +289,6 @@
             font-size: 1.2rem;
         }
         
-        .controls {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            display: flex;
-            gap: 15px;
-            z-index: 200;
-        }
-        
-        .btn {
-            padding: 14px 28px;
-            background: var(--secondary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
-            display: flex;
-            align-items: center;
-            font-size: 1.1rem;
-        }
-        
-        .btn i {
-            margin-right: 8px;
-        }
-        
-        .btn:hover {
-            background: #2980b9;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.6);
-        }
-        
         .data-section {
             margin-top: 30px;
             overflow: auto;
@@ -1209,18 +1175,11 @@
             </div>
         </div>
     </div>
-    
-    <div class="controls">
-        <button class="btn" id="prev-btn"><i class="fas fa-arrow-left"></i> Back</button>
-        <button class="btn" id="next-btn">Next <i class="fas fa-arrow-right"></i></button>
-    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const slides = document.querySelectorAll('.slide');
             const navItems = document.querySelectorAll('.nav-item');
-            const prevBtn = document.getElementById('prev-btn');
-            const nextBtn = document.getElementById('next-btn');
             const slideCounter = document.querySelector('.slide-counter');
             const tabs = document.querySelectorAll('.tab');
             const tabContents = document.querySelectorAll('.tab-content');
@@ -1245,33 +1204,6 @@
                     currentSlide = index;
                     showSlide(currentSlide);
                 });
-            });
-            
-            // Back button
-            prevBtn.addEventListener('click', () => {
-                if (currentSlide > 0) {
-                    currentSlide--;
-                    showSlide(currentSlide);
-                }
-            });
-            
-            // Next button
-            nextBtn.addEventListener('click', () => {
-                if (currentSlide < slides.length - 1) {
-                    currentSlide++;
-                    showSlide(currentSlide);
-                }
-            });
-            
-            // Keyboard navigation
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'ArrowLeft' && currentSlide > 0) {
-                    currentSlide--;
-                    showSlide(currentSlide);
-                } else if (e.key === 'ArrowRight' && currentSlide < slides.length - 1) {
-                    currentSlide++;
-                    showSlide(currentSlide);
-                }
             });
             
             // Tab functionality
